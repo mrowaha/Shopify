@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Cart = require('../models/cart');
 
 exports.getIndex = (req, res, next) => {
     const callback = (products) => {
@@ -31,21 +32,44 @@ exports.getProductById = (req, res, next) => {
             path: '/products',
             product: product
         })
-    })
-    
+    })   
 }
 
 exports.postCart = (req, res, next) => {
     const prodId = req.body.productId;
-    console.log(prodId);
+    Product.findById(prodId, (product) => {
+        Cart.addProduct(prodId, product.price);
+    })
     res.redirect('/shop/cart')
 }
 
 exports.getCart = (req, res, next) => {
-    res.render('shop/cart', {
-        docTitle: "Your Cart",
-        path: "/cart"
+    Cart.getCart(cart => {
+        Product.fetchAll(products => {
+            const cartProducts = [];
+            for(let product of products){
+                const cartProductData = cart.products.find(prod => prod.id === product.id);
+                if(cartProductData){
+                    cartProducts.push({productData: product, qty: cartProductData.quantity });
+                }
+            }
+            res.render('shop/cart', {
+                docTitle: "Your Cart",
+                path: "/cart",
+                products: cartProducts,
+                hasProducts: cartProducts.length > 0
+            })
+        })
     })
+}
+
+exports.postCartDelete = (req, res, next) => {
+    const prodId = req.body.productId;
+    //console.log(prodId);
+    Product.findById(prodId, product => {
+        Cart.deleteProduct(prodId, product.price);
+        res.redirect('/shop/cart');
+    });
 }
 
 exports.getCheckout = (req, res, next) => {
@@ -62,22 +86,3 @@ exports.getOrders = (req, res, next) => {
     })
 }
 
-
-//The async await implementation when fetchall returns a new promise
-// exports.getProducts = async (req, res, next) => {
-//     try{
-//         let products = await Product.fetchAll();
-//         //const products = [];
-        
-//         res.render('shop', {
-//             prods: products,
-//             docTitle: 'My Shop', 
-//             path: '/', 
-//             hasProducts: products.length > 0,
-//             activeShop: true,
-//             productCss: true
-//         });
-//     }catch(error){
-//         console.log(error);
-//     }
-// }

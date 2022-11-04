@@ -2,7 +2,6 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
-//const expresshbs = require('express-handlebars')
 const dotenv = require('dotenv');
 const app = express();
 dotenv.config({path: "./.env"})
@@ -12,9 +11,6 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const errorControllers = require("./controllers/error");
 
-//app.engine('handlebars', expresshbs({layoutsDir: 'views/layouts', defaultLayout: 'main-layout'}));
-//app.set('view engine', 'handlebars');
-//app.set('view engine', 'pug');
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 

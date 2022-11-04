@@ -2,11 +2,12 @@ const path = require('path');
 const fs = require('fs');
 
 const rootDir = require('../util/path');
-const { resolve } = require('path');
+const Cart = require('../models/cart');
+
+const productsDB = path.join(rootDir, 'data', 'products.json');
 
 const getProductsFromFile = (callback) => {
-    const pathToFetch  =  path.join(rootDir, 'data', 'products.json');
-    fs.readFile(pathToFetch, (error, fileData) => {
+    fs.readFile(productsDB, (error, fileData) => {
         if(error){
             callback([]);
         }else{
@@ -18,9 +19,6 @@ const getProductsFromFile = (callback) => {
 }
 
 module.exports = class Product{
-    //static products = [];
-    static save_path = path.join(rootDir, 'data', 'products.json');
-    
     static fetchAll(callback){ 
         getProductsFromFile(callback);
     }
@@ -31,8 +29,21 @@ module.exports = class Product{
             callback(productById);
         })
     }
+
+    static deleteById(id) {
+        getProductsFromFile(products => {
+            const product = products.find(prod => prod.id === id);
+            const updatedProducts = products.filter(prod => prod.id !== id);
+            fs.writeFile(productsDB, JSON.stringify(updatedProducts), err => {
+              if (!err) {
+                Cart.deleteProduct(id, product.price);
+              }
+            });
+          });
+    }
     
-    constructor(title, imageUrl, description, price){
+    constructor(id, title, imageUrl, description, price){
+        this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
         this.description = description;
@@ -41,24 +52,21 @@ module.exports = class Product{
     }
 
     save() {
-        this.id = Math.random().toString();
         getProductsFromFile(products => {
-            products.push(this); //because save is binded to the instantiated object we get this -> the object
-            if(products){
-                fs.writeFile(Product.save_path, JSON.stringify(products), (err) => {console.log(err.message)})
+            if(this.id){
+                const existingProductIndex = products.findIndex(product => product.id === this.id);
+                const updatedProducts = [...products]; //doing this for immutability purposes
+                updatedProducts[existingProductIndex] = this; //this was now a newly instantiated product so calling this
+                fs.writeFile(productsDB, JSON.stringify(updatedProducts), (err) => {console.log(err?.message)});
+            }else{
+                //if there was no id make a new product
+                this.id = Math.random().toString();
+                products.push(this); //because save is binded to the instantiated object we get this -> the object
+                if(products){
+                    fs.writeFile(productsDB, JSON.stringify(products), (err) => {console.log(err?.message)})
+                }
             }
-        }) 
-        //Product.products.push(this);
-        // fs.readFile(Product.save_path, (error, data) => {
-        //     let products = [];
-        //     if(error){
-        //         console.log(error.message);
-        //     }else{
-        //         products = JSON.parse(data);
-        //         console.log('File Content:', data);
-        //     }
-        //     products.push(this);
-        //     fs.writeFile(Product.save_path, JSON.stringify(products), (err) => {console.log(err.message)});
-        // });     
+        })
     }
+
 }
