@@ -4,8 +4,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const app = express();
-dotenv.config({path: "./.env"})
 
+const env = require('./util/env');
+const db = require('./util/database'); 
 const rootDir = require('./util/path'); //absolute path for the main file
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -28,7 +29,7 @@ app.use('/', errorControllers.get404);
 
 //only listen if app is launched as a parent file
 if(require.main){
-    const PORT = process.env.PORT;
+    const PORT = env.PORT;
     app.listen(PORT, () => {
         console.log(`Server is listening on Port ${PORT}`);
     });
