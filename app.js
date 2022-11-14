@@ -65,8 +65,8 @@ Product.belongsToMany(Order, {through: OrderItem});
 
 //during development set force to true
 sequelize
-//.sync({force: true})
-.sync()
+.sync({force: true})
+//.sync()
 .then(res => {
     //dummy user
     return User.findByPk(1);
