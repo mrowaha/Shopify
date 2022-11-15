@@ -17,10 +17,10 @@ exports.getIndex = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
     Product.fetchAll()
     .then(products => {
-        res.render('shop/index',{
+        res.render('shop/product-list',{
             prods: products,
             docTitle: 'Shop',
-            path: '/'
+            path: '/products'
         });
     })
     .catch(err => {
@@ -45,30 +45,12 @@ exports.getProductById = (req, res, next) => {
 
 exports.postCart = (req, res, next) => {
     const prodId = req.body.productId;
-    let fetchedCart, newQuantity = 1;
-    req.user.getCart()
-    .then(cart => {
-        fetchedCart = cart;
-        return cart.getProducts({where: {id: prodId}});
+    Product.findById(prodId)
+    .then(product => {
+        return req.user.addToCart(product);
     })
-    .then(products => {
-        let product;
-        if(products.length > 0){
-            product = products[0];
-        }
-        if(product){
-            //a part of cart already
-            const oldQuantity = product.cartItem.quantity;
-            newQuantity += oldQuantity;
-            return product; 
-        }
-        //add a new product
-        return Product.findByPk(prodId)
-    })
-    .then(product=> {
-        return fetchedCart.addProduct(product, {through : {quantity : newQuantity}});
-    })
-    .then(() => {
+    .then(result => {
+        console.log(result);
         res.redirect('/shop/cart');
     })
     .catch(err => {
@@ -78,10 +60,6 @@ exports.postCart = (req, res, next) => {
 
 exports.getCart = (req, res, next) => {
     req.user.getCart()
-    .then(cart => {
-        //console.log(cart);
-        return cart.getProducts();
-    })
     .then(products => {
         res.render('shop/cart', {
             docTitle: "Your Cart",
@@ -97,15 +75,7 @@ exports.getCart = (req, res, next) => {
 
 exports.postCartDelete = (req, res, next) => {
     const prodId = req.body.productId;
-    //console.log(prodId);
-    req.user.getCart()
-    .then(cart => {
-        return cart.getProducts({where : {id : prodId}});
-    })
-    .then(products => {
-        const product = products[0];
-        return product.cartItem.destroy();
-    })
+    req.user.deleteItemFromCart(prodId)
     .then(() => {
         res.redirect('/shop/cart');
     })
@@ -122,7 +92,7 @@ exports.getCheckout = (req, res, next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-    req.user.getOrders({include : ['products']}) //sequelize pluralizes the product table name
+    req.user.getOrders() //sequelize pluralizes the product table name
     .then(orders => {
         res.render('shop/orders', {
             path: "/orders",
@@ -136,30 +106,10 @@ exports.getOrders = (req, res, next) => {
 }
 
 exports.postOrder = (req, res, next) => {
-    let fetchedCart;
-    req.user.getCart()
-    .then(cart => {
-        fetchedCart = cart;
-        return cart.getProducts();
-    })
-    .then(products =>{
-        return req.user
-        .createOrder()
-        .then(order => {
-            return order.addProducts(products.map(product => {
-                product.orderItem = { quantity: product.cartItem.quantity };
-                return product;
-            }))
-        })
-        .catch(err => {
-            console.log(err);
-        })
-    })
-    .then(result => {
-        return fetchedCart.setProducts(null);
-    })
-    .then(result => {
-        res.redirect('/shop/orders');
+    req.user
+    .addOrder()
+    .then(() => {
+        res.redirect('/shop/orders')
     })
     .catch(err => {
         console.log(err);
