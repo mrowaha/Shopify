@@ -1,15 +1,25 @@
-// const mysqlServer = require('mysql2');
-const Sequelize = require('sequelize');
-const dbEnv = require('./env').DATABASE;
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
 
-// const pool = mysqlServer.createPool({
-//     host: dbEnv.host,
-//     user: dbEnv.user,
-//     database: dbEnv.database,
-//     password: dbEnv.password
-// });
+let _db;
 
-const sequelize = new Sequelize(dbEnv.database, dbEnv.user, dbEnv.password, {dialect: 'mysql', host: dbEnv.host});
+const mongoConnect = async (cb) => {
+    try {
+        const client = await MongoClient.connect(`mongodb://localhost:27017`);
+        console.log('Connected To MongoDB');
+        _db = client.db('shopify'); 
+        cb();
+    }catch(err){
+        console.log(err);
+    }
+}
 
-// module.exports = pool.promise();  
-module.exports = sequelize;
+const getDb = () => {
+    if(_db){
+        return _db;
+    }
+    throw 'No database found';
+}
+
+exports.mongoConnect = mongoConnect;
+exports.getDb = getDb;
