@@ -2,11 +2,10 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const rootDir = require('./util/path'); //absolute path for the main file
 const env = require('./util/env');
-
-const mongoConnect = require('./util/database').mongoConnect;
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -22,10 +21,10 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, "public")))
 
 app.use((req, res, next) => {
-    User.findById("637375b6339a805e60e986ff")
+    User.findById(env.DEVELOPMENT.user.mongodb_id)
     .then(user => {
         console.log("User Logged In:\n", user);
-        req.user = new User(user.name, user.email, user.cart, user._id);
+        req.user = user; //a mongoose model is stored, can call any member functions
         next();
     })
     .catch(err => {
@@ -43,10 +42,29 @@ app.use('/admin', adminRoutes);
 //catch all unhandled requests
 app.use('/', errorControllers.get404);
 
-mongoConnect(() => {
-    if(require.main){
-        app.listen(env.PORT, () => {
-            console.log(`Server listening on Port ${env.PORT}`);
-        })
-    }
-})
+mongoose.connect(`mongodb://localhost:27017/shopify`)
+    .then(() => {
+        return User.findOne().then(user => {
+            if(!user){
+                const {username, email} = env.DEVELOPMENT.user;   
+                const user = new User({
+                    username,
+                    email,           
+                    cart : {
+                        items : []
+                    }
+                })    
+                return user.save();
+            }
+        });
+    })
+    .then((result) => {
+        if(require.main){
+            app.listen(env.PORT, () =>{
+                console.log(`Server listening on PORT ${env.PORT}`)
+            })
+        }
+    })
+    .catch(err => {
+        console.err(err);
+    })

@@ -7,11 +7,19 @@ dotenv.config({path: path.join(rootDir, '.env')});
 const env = {
     PORT: process.env.PORT,
     DATABASE: {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD
+        host: process.env.SQLDB_HOST,
+        user: process.env.SQLDB_USER,
+        database: process.env.SQLDB_DATABASE,
+        password: process.env.SQLDB_PASSWORD
+    },
+    DEVELOPMENT : {
+        user : {
+            username : process.env.DEV_USERNAME,
+            email : process.env.DEV_EMAIL,
+            mongodb_id : process.env.DEV_MONGODBID
+        } 
     }
+
 }
 
 module.exports = env;
