@@ -23,7 +23,6 @@ app.use(express.static(path.join(__dirname, "public")))
 app.use((req, res, next) => {
     User.findById(env.DEVELOPMENT.user.mongodb_id)
     .then(user => {
-        console.log("User Logged In:\n", user);
         req.user = user; //a mongoose model is stored, can call any member functions
         next();
     })

@@ -16,9 +16,9 @@ exports.postAddProduct = (req, res, next) => {
         title : title, 
         price : price, 
         description : description, 
-        imageUrl : imageUrl
+        imageUrl : imageUrl,
+        userId : req.user //mongoose picks the _id
     }); 
-    console.log("heerererewqedrw");
     product
     .save() 
     .then(() => {
@@ -32,6 +32,8 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
     Product.find()
+        // .select('title price -_id') //this selects the title and price only (does not select the id which is always retrieved unless explicitly excluded)
+        // .populate('userId', 'name') //populates the userId field with the user document name field
         .then((products) => {
             console.log('Products fetched', products)
             res.render('admin/product-list', {
