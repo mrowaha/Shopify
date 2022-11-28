@@ -19,6 +19,11 @@ form {
   display: inline;
 }
 
+ul {
+    list-style-type: none;
+}
+
+
 .centered {
   text-align: center;
 }
@@ -34,8 +39,10 @@ form {
 
 .main-header__nav {
   height: 100%;
-  display: none;
+  width: 100%;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .main-header__item-list {
@@ -46,18 +53,25 @@ form {
 }
 
 .main-header__item {
-  margin: 0 1rem;
-  padding: 0;
+    margin: 0 1rem;
+    padding: 0;
+    list-style: none;
 }
 
-.main-header__item a {
+.main-header__item a,
+.main-header__item button {
   text-decoration: none;
   color: white;
+  border : none;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .main-header__item a:hover,
 .main-header__item a:active,
-.main-header__item a.active {
+.main-header__item button:hover,
+.main-header__item button.active {
   color: #ffeb3b;
 }
 

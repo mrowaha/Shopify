@@ -4,7 +4,8 @@ exports.getAddProduct = (req, res, next) => {
     res.render('admin/edit-product', {
         docTitle: "Add Product", 
         path: '/admin/add-product',
-        editing: false
+        editing: false,
+        isAuthenticated : req.session.isLoggedIn
     })}
     
 exports.postAddProduct = (req, res, next) => {
@@ -17,7 +18,8 @@ exports.postAddProduct = (req, res, next) => {
         price : price, 
         description : description, 
         imageUrl : imageUrl,
-        userId : req.user //mongoose picks the _id
+        userId : req.user, //mongoose picks the _id
+        isAuthenticated : req.session.isLoggedIn
     }); 
     product
     .save() 
@@ -39,7 +41,8 @@ exports.getProducts = (req, res, next) => {
             res.render('admin/product-list', {
                 prods: products,
                 docTitle: 'Admin Products',
-                path: '/admin/products'
+                path: '/admin/products',
+                isAuthenticated : req.session.isLoggedIn
             })
         })
         .catch(err => {
@@ -62,7 +65,8 @@ exports.getEditProduct = (req, res, next) => {
             product: product,
             docTitle: "Edit Product By Name",
             path: '/admin/edit-product',
-            editing: editMode 
+            editing: editMode,
+            isAuthenticated : req.session.isLoggedIn
         })  
     })
     .catch(err => {
@@ -86,7 +90,7 @@ exports.postEditProduct = (req, res, next) => {
             return product.save()
         })
         .then((result)=> {
-            res.redirect('/admin/products'); 
+            res.redirect('/admin/products', ); 
         })
         .catch(err => {
             console.log(err);
