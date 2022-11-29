@@ -64,22 +64,7 @@ app.use('/admin', adminRoutes);
 app.use('/', errorControllers.get404);
 
 mongoose
-    .connect(MONGODB_URI)
-    .then(() => {
-        return User.findOne().then(user => {
-            if(!user){
-                const {username, email} = env.DEVELOPMENT.user;   
-                const user = new User({
-                    username,
-                    email,           
-                    cart : {
-                        items : []
-                    }
-                })    
-                return user.save();
-            }
-        });
-    })
+    .connect(MONGODB_URI) 
     .then((result) => {
         if(require.main){
             app.listen(env.PORT, () =>{
