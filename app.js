@@ -1,5 +1,6 @@
 const path = require('path');
 
+const csrf = require('csurf');
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
@@ -17,12 +18,14 @@ const errorControllers = require("./controllers/error");
 const User = require('./models/user');
 const authRouter = require('./routes/auth');
 
+//config
 const app = express();
 const MONGODB_URI = `mongodb://localhost:27017/shopify`
 const store = new MongodbStore({
     uri : MONGODB_URI,
     collection : 'sessions' 
 });
+const csrfProtection = csrf(); //stores in a session by default
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -35,6 +38,8 @@ app.use(session({
     saveUninitialized : false,
     store : store
 }))
+app.use(csrfProtection);
+
 
 app.use((req, res, next) => {
     if(!req.session.user){
@@ -49,6 +54,11 @@ app.use((req, res, next) => {
             console.log(err)
         })
     }
+})
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();    
 })
 
 app.get('/', (req, res, next) => {  
