@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const env = require('../util/env')
 const User = require('../models/user')
 
@@ -19,17 +21,32 @@ exports.getSignup = (req, res, next) => {
 }
 
 exports.postLogin = (req, res, next) => {
-    User.findById(env.DEVELOPMENT.user.mongodb_id)
+    const email = req.body.email;
+    const password = req.body.password;
+
+    User.findOne({email : email})
     .then(user => {
-        req.session.user = user; //a mongoose model is stored, but cannot call any functions we define on our model
-        req.session.isLoggedIn = true;   
-        req.session.save((err) => {
-            if(err){
-                console.log(err);
-                return;
+        if(!user) {
+            return res.redirect('/auth/login');
+        }
+        bcrypt.compare(password, user.password)
+        .then(matched => {
+            if(matched) {
+                req.session.user = user; //a mongoose model is stored, but cannot call any functions we define on our model
+                req.session.isLoggedIn = true;   
+                return req.session.save((err) => {
+                    if(err){
+                        console.log(err);
+                    }
+                    res.redirect("/")
+                })
             }
-            res.redirect("/")
-        }) 
+            res.redirect('/auth/login');
+        })
+        .catch(err => {
+            console.log(err);
+            res.redirect('/auth/login');
+        }); 
     })
     .catch(err => {
         console.log(err);
@@ -47,15 +64,21 @@ exports.postSignup = (req, res, next) => {
                 //user already exists with this email
                 return res.redirect('/auth/signup');
             }
-            const user = new User( {
-                email : email,
-                password : password,
-                cart  : {items : []}
+            //hash the password
+            return bcrypt
+            .hash(password, 12)
+            .then(hashedPassword => {
+                const user = new User( {
+                    email : email,
+                    password :  hashedPassword,
+                    cart  : {items : []}
+                })
+                return user.save();
+    
             })
-            return user.save();
-        })
-        .then(result => {
-            res.redirect('/auth/login');
+            .then(result => {
+                res.redirect('/auth/login');
+            })
         })
         .catch(err => {
             console.log(err);
