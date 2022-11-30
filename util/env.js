@@ -19,7 +19,11 @@ const env = {
             mongodb_id : process.env.DEV_MONGODBID
         } 
     },
-    SESSION_SECRET : process.env.SESSION_SECRET
+    SESSION_SECRET : process.env.SESSION_SECRET,
+    MAILER : {
+        email : process.env.MAILER_EMAIL,
+        password : process.env.MAILER_PASS
+    }
 }
 
 module.exports = env;

@@ -1,7 +1,16 @@
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer')
 
 const env = require('../util/env')
 const User = require('../models/user')
+
+const transporter = nodemailer.createTransport({
+    service : 'hotmail',
+    auth : {
+        user : env.MAILER.email,
+        pass : env.MAILER.password
+    }
+})
 
 exports.getLogin = (req, res, next) => {
     const isLoggedIn = req.session.isLoggedIn;
@@ -95,6 +104,20 @@ exports.postSignup = (req, res, next) => {
     
             })
             .then(result => {
+                const mailOptions = {
+                    from : env.MAILER.email,
+                    to : email,
+                    subject : 'Account created on Shopify',
+                    text : 'account created' 
+                }
+                transporter.sendMail(mailOptions, (err, info) => {
+                    if(err){
+                        console.log(err)
+                    }else {
+                        console.log(info.response)
+                    }
+                })
+
                 res.redirect('/auth/login');
             })
         })
