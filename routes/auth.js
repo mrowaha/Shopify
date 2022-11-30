@@ -13,4 +13,8 @@ authRouter.post('/signup', authController.postSignup);
 
 authRouter.post('/logout', authController.postLogout);
 
+authRouter.get('/reset', authController.getReset);
+
+authRouter.post('/reset', authController.postReset);
+
 module.exports = authRouter;

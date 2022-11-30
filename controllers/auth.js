@@ -1,3 +1,5 @@
+const crypto = require('crypto')
+
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer')
 
@@ -134,4 +136,66 @@ exports.postLogout = (req, res, next) => {
         }
         res.redirect('/');
     });    
+}
+
+exports.getReset = (req, res, next) => {
+    let message = req.flash('error')
+    if(message.length > 0){
+        message = message[0]
+    } else {
+        message = null
+    }    
+    
+    res.render('auth/reset', {
+        path : 'reset',
+        docTitle : 'Reset Password',
+        errorMessage : message
+    })
+}
+
+exports.postReset = (req, res, next) => {
+    crypto.randomBytes(32, function(err, buffer) {
+        if(err){
+            req.flash('error', 'An error occured while generating token')
+            console.log(err)
+            return res.redirect('/auth/reset');
+        }else {
+            const token = buffer.toString('hex');
+            User.findOne({email : req.body.email})
+            .then(user => {
+                if (!user){
+                    req.flash('error', 'No account with email found');
+                    res.redirect('/auth/reset')
+                }else{
+                    user.resetToken = token;
+                    user.resetTokenExpiration = Date.now() + 3600000; //one hour expiration
+                    user.save()
+                    .then(() => {
+                        const mailOptions = {
+                            from : env.MAILER.email,
+                            to : req.body.email,
+                            subject : 'Pasword Reset | Shopify',
+                            html: `
+                                <p> Your requested a password reset </p>
+                                <p> Click the link below to set a new password.</p>
+                                <a href="http://localhost:4040/auth/reset/${token}">Reset</a>        
+                            ` 
+                        }
+                        transporter.sendMail(mailOptions, (err, info) => {
+                            if(err){
+                                console.log(err)
+                            }else {
+                                console.log(info.response)
+                            }
+                        })
+                        res.redirect('/');
+                    })
+                }           
+            })
+            .catch(err => {
+                console.log(err);
+            })
+
+        }
+    })
 }
