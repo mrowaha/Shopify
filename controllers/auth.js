@@ -5,18 +5,33 @@ const User = require('../models/user')
 
 exports.getLogin = (req, res, next) => {
     const isLoggedIn = req.session.isLoggedIn;
+
+    let message = req.flash('error');
+    if(message.length > 0){
+        message = message[0]
+    }else {
+        message = null
+    }
     res.render('auth/login', {
         path : '/login',
         docTitle : 'Login',
-        isAuthenticated : isLoggedIn
+        isAuthenticated : isLoggedIn,
+        errorMessage : message
     })
 }
 
 exports.getSignup = (req, res, next) => {
+    let message = req.flash('error');
+    if(message.length > 0){
+        message = message[0]
+    }else {
+        message = null
+    }
     res.render('auth/signup', {
         path : 'signup',
         docTitle: 'Sign Up',
-        isAuthenticated : false
+        isAuthenticated : false,
+        errorMessage : message
     })
 }
 
@@ -27,6 +42,7 @@ exports.postLogin = (req, res, next) => {
     User.findOne({email : email})
     .then(user => {
         if(!user) {
+            req.flash('error', 'Invalid email. User does not exist')
             return res.redirect('/auth/login');
         }
         bcrypt.compare(password, user.password)
@@ -41,6 +57,7 @@ exports.postLogin = (req, res, next) => {
                     res.redirect("/")
                 })
             }
+            req.flash('error', 'Incorrect password')
             res.redirect('/auth/login');
         })
         .catch(err => {
@@ -62,6 +79,7 @@ exports.postSignup = (req, res, next) => {
         .then(userDoc => {
             if(userDoc) {
                 //user already exists with this email
+                req.flash('error', 'Email already exists. Enter new email') 
                 return res.redirect('/auth/signup');
             }
             //hash the password

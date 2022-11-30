@@ -1,5 +1,6 @@
 const path = require('path');
 
+const flash = require('connect-flash')
 const csrf = require('csurf');
 const express = require('express');
 const session = require('express-session');
@@ -39,6 +40,7 @@ app.use(session({
     store : store
 }))
 app.use(csrfProtection);
+app.use(flash())
 
 
 app.use((req, res, next) => {
