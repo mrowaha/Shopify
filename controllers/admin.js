@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 
 exports.getAddProduct = (req, res, next) => {
+    console.log(res.locals.csrfToken)
     res.render('admin/edit-product', {
         docTitle: "Add Product", 
         path: '/admin/add-product',

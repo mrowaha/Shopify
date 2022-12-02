@@ -74,6 +74,9 @@ app.use('/admin', adminRoutes);
 
 //catch all unhandled requests
 app.use('/', errorControllers.get404);
+app.use((err, req, res, next) =>{
+    res.redirect('/');
+})
 
 mongoose
     .connect(MONGODB_URI) 
