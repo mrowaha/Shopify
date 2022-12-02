@@ -24,4 +24,29 @@ ___________________________
 7. add the relevant environment variables to .env (view /util/env.js for complete list) 
 8. run npm start
 ```
-
+___________________________
+# Features that I have currently implemented
+```
+1. Main Index Page (showing all products | planning to add a banner)
+2. All Products Page
+3. Login 
+4. Signup
+5. Adding to Cart
+6. Placing Orders
+7. Performing CRUD operations on products (as a logged in user)
+8. Password Resets
+9. Shopify Mailer
+10. CSRF Protection
+11. Hashed Passwords
+```
+____________________________
+# MVP
+```
+1. Any user can view the shop
+2. User can create account
+3. User can login
+4. User can manage account
+5. User can add products to shop
+6. User can add products to cart and place order
+7. Integrate payments using Stripe
+```
