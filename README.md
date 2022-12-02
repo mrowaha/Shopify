@@ -1,4 +1,4 @@
-# Shop
+# Shopify
 A practice project that I am creating while learning backend development with Node
 
 The directory structure follows the MVC model 
